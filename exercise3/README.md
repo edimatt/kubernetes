@@ -1,5 +1,3 @@
-Sure, let’s add more specific details to the web applications and their communication.
-
 ### Detailed Exercise: Deploy and Manage a Multi-Container Application
 
 #### Objective:
