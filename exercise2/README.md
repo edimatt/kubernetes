@@ -26,34 +26,8 @@ You are managing a Kubernetes cluster for a web application. The application nee
 
 1. **Install the Metrics Server:**
 
-   If the Metrics Server is not already installed, you can install it using the following commands:
-
-   ```bash
-   $ helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
-   $ k create namespace metrics-server
-   namespace/metrics-server created
-   $ k config set-context --current --namespace metrics-server
-   Context "kubernetes-admin@kubernetes" modified.
-   $ helm upgrade --install metrics-server metrics-server/metrics-server
-   Release "metrics-server" does not exist. Installing it now.
-   NAME: metrics-server
-   LAST DEPLOYED: Fri Jul 19 09:38:56 2024
-   NAMESPACE: metrics-server
-   STATUS: deployed
-   REVISION: 1
-   TEST SUITE: None
-   NOTES:
-   ***********************************************************************
-   * Metrics Server                                                      *
-   ***********************************************************************
-   Chart version: 3.12.1
-   App version:   0.7.1
-   Image tag:     registry.k8s.io/metrics-server/metrics-server:v0.7.1
-   ***********************************************************************
-   ```
-
-   Verify that the Metrics Server is running:
-
+   Then, verify it's running:
+   
    ```bash
    kubectl get deployment metrics-server -n kube-system
    ```

@@ -23,6 +23,7 @@ and control it using terraform.
 
    ```bash
    sudo systemctl restart kubelet
+   sudo systemctl restart crio
    ```
 
 ### Step 2: Reinitialize the Master Node
@@ -41,30 +42,36 @@ and control it using terraform.
    sudo chown $(id -u):$(id -g) $HOME/.kube/config
    ```
 
-### Step 3: Deploy Cilium
-
-1. **Install the Cilium CLI:**
-
-
-2. **Deploy Cilium:**
-
-   ```bash
-   cilium install
-   ```
-
-3. **Verify Cilium installation:**
-
-   ```bash
-   cilium status --wait
-   ```
-
-### Step 4: Remove the Taint from the Master Node
+### Step 3: Remove the Taint from the Master Node
 
 1. **Remove the taint from the master node to allow scheduling pods:**
 
    ```bash
    kubectl taint nodes --all node-role.kubernetes.io/control-plane-
    kubectl taint nodes --all node-role.kubernetes.io/master-
+   ```
+
+
+### Step 4: Deploy Calico
+
+1. **Install the Calico operator
+
+   ```bash
+   kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml
+   ```
+
+2. **Modify and install the CRD**
+
+   ```bash
+   wget https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/custom-resources.yaml
+   # Modify the cidr, then:
+   kubectl create -f custom-resources.yaml
+   ```
+
+3. **Verify Calico installation:**
+
+   ```bash
+   watch kubectl get pods -n calico-system
    ```
 
 ### Step 5: Verify the Cluster
@@ -87,6 +94,32 @@ and control it using terraform.
 
    ```bash
    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+   ```
+
+   Or use HELM to install.
+
+   ```bash
+   $ helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+   $ k create namespace metrics-server
+   namespace/metrics-server created
+   $ k config set-context --current --namespace metrics-server
+   Context "kubernetes-admin@kubernetes" modified.
+   $ helm upgrade --install metrics-server metrics-server/metrics-server
+   Release "metrics-server" does not exist. Installing it now.
+   NAME: metrics-server
+   LAST DEPLOYED: Fri Jul 19 09:38:56 2024
+   NAMESPACE: metrics-server
+   STATUS: deployed
+   REVISION: 1
+   TEST SUITE: None
+   NOTES:
+   ***********************************************************************
+   * Metrics Server                                                      *
+   ***********************************************************************
+   Chart version: 3.12.1
+   App version:   0.7.1
+   Image tag:     registry.k8s.io/metrics-server/metrics-server:v0.7.1
+   ***********************************************************************
    ```
 
 2. **Edit the Metrics Server deployment to add the `--kubelet-insecure-tls` flag:**

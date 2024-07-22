@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+  namespace: ckad-exercise
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - image: docker.io/edimatt/nodeapp:1.0
+        name: nodeapp
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        resources: {}
+        envFrom:
+        - configMapRef:
+            name: frontend-cfg
