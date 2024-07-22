@@ -125,3 +125,70 @@ frontend-srv   NodePort    10.97.255.52     <none>        3000:32523/TCP   13m
 ```
 
 We are now able to access the application via the *ClusterIP* 10.97.255.52:3000 or the *NodePort* localhost:32523
+
+## Add a volumne
+
+```bash
+   k edit deployment backend
+```
+
+Add the following sections:
+```yaml
+       volumes:
+      - hostPath:
+          path: /home/edoardo/Projects/ckad/exercise3/backend/data
+          type: DirectoryOrCreate
+        name: dir-vol
+```
+
+And in the image a corresponding mount point:
+
+```yaml
+        volumeMounts:
+        - mountPath: /mnt/data
+          name: dir-vol
+```
+
+Add a change reason:
+
+```bash
+k annotate deployments.apps backend kubernetes.io/change-cause="Add persistent volume"
+deployment.apps/backend annotated
+k rollout history deployment backend 
+deployment.apps/backend 
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+3         Add persistent volume
+```
+
+## Add resource limits to the backend
+
+Add the following
+
+```yaml
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+```
+
+```yaml
+  annotations:         
+    deployment.kubernetes.io/revision: "4"
+    kubernetes.io/change-cause: Add resource limits
+```
+
+## Autoscale the backend
+
+```bash
+k autoscale deployment backend --min 1 --max 5 --cpu-percent 50
+k get hpa
+NAME      REFERENCE            TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+backend   Deployment/backend   cpu: 2%/50%   1         5         2          18s
+```
+
+Since we installed the metrics server and we have resource requests for CPU defined, the HPA
+can track resource utilization and scale accordingly.
